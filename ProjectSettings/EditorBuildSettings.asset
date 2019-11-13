@@ -4,5 +4,11 @@
 EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
-  m_Scenes: []
+  m_Scenes:
+  - enabled: 1
+    path: Assets/Scenes/Sign-In.unity
+    guid: 0d3340b577a4ca042b5939345421091c
+  - enabled: 1
+    path: Assets/Scenes/Labrake_Scene.unity
+    guid: ade2952258f0b9d49903a91d000ebd38
   m_configObjects: {}
