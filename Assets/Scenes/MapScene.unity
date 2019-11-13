@@ -3702,7 +3702,7 @@ MonoBehaviour:
       latitudeLongitude: 41.661860, -71.503142
       zoom: 16
     extentOptions:
-      extentType: 1
+      extentType: 2
       defaultExtents:
         cameraBoundsOptions:
           camera: {fileID: 0}
@@ -3715,7 +3715,7 @@ MonoBehaviour:
           south: 1
         rangeAroundTransformOptions:
           targetTransform: {fileID: 4961857142556107}
-          visibleBuffer: 0
+          visibleBuffer: 1
           disposeBuffer: 0
     placementOptions:
       placementType: 1
@@ -3733,7 +3733,7 @@ MonoBehaviour:
         isActive: 1
         layerSource:
           Name: Streets
-          Id: mapbox://styles/kylegdev/ck2njbntr1bf51cpfir65tq5p
+          Id: mapbox://styles/kylegdev/ck2wgh9lr1n841cnxaejue0hb
           Modified: 
           UserName: 
       rasterOptions:
@@ -3776,11 +3776,8 @@ MonoBehaviour:
         - airport_label
         - barrier_line
         - building
-        - contour
         - country_label
-        - hillshade
         - housenum_label
-        - landcover
         - landuse
         - landuse_overlay
         - marine_label
@@ -3788,21 +3785,21 @@ MonoBehaviour:
         - mountain_peak_label
         - place_label
         - poi_label
+        - pollstops-6j5lk4
         - rail_station_label
         - road
         - road_label
         - state_label
-        - traffic
         - water
         - water_label
         - waterway
         - waterway_label
-      _sourceType: 0
+      _sourceType: 2
       sourceOptions:
         isActive: 1
         layerSource:
           Name: Mapbox Terrain
-          Id: mapbox.3d-buildings,mapbox.mapbox-streets-v7
+          Id: mapbox.3d-buildings,mapbox.mapbox-streets-v7,kylegdev.axijt6re
           Modified: 
           UserName: 
       useOptimizedStyle: 0
@@ -3813,12 +3810,12 @@ MonoBehaviour:
         UserName: 
       performanceOptions:
         isEnabled: 1
-        entityPerCoroutine: 20
+        entityPerCoroutine: 200
       vectorSubLayers: []
       locationPrefabList:
       - coreOptions:
           sourceId: 
-          isActive: 1
+          isActive: 0
           sublayerName: PollStop
           geometryType: 0
           layerName: 
@@ -3875,7 +3872,74 @@ MonoBehaviour:
           prefab: {fileID: 2082009218491416162, guid: 3ba809b6fc31b904f88733b9151bdac5,
             type: 3}
           scaleDownWithWorld: 0
-        findByType: 2
+        findByType: 0
+        categories: -1
+        nameString: 
+        coordinates:
+        - 41.662084, -71.503767
+        - 41.661934, -71.502718
+        - 60.192044, 24.967906
+        density: 15
+      - coreOptions:
+          sourceId: 
+          isActive: 1
+          sublayerName: New Location
+          geometryType: 0
+          layerName: 
+          snapToTerrain: 1
+          combineMeshes: 0
+        lineGeometryOptions:
+          Width: 0
+          MiterLimit: 0
+          RoundLimit: 0
+          JoinType: 0
+          CapType: 0
+        filterOptions:
+          _selectedLayerName: 
+          filters: []
+          combinerType: 0
+        extrusionOptions:
+          _selectedLayerName: 
+          extrusionType: 0
+          extrusionGeometryType: 0
+          propertyName: height
+          propertyDescription: 
+          minimumHeight: 0
+          maximumHeight: 0
+          extrusionScaleFactor: 1
+        colliderOptions:
+          colliderType: 0
+        materialOptions:
+          style: 0
+          texturingType: 0
+          materials: []
+          atlasInfo: {fileID: 0}
+          lightStyleOpacity: 0
+          darkStyleOpacity: 0
+          colorStyleColor: {r: 0, g: 0, b: 0, a: 0}
+          samplePalettes: 0
+          colorPalette: {fileID: 0}
+          customStyleOptions:
+            texturingType: 0
+            materials: []
+            atlasInfo: {fileID: 0}
+            colorPalette: {fileID: 0}
+        performanceOptions:
+          isEnabled: 1
+          entityPerCoroutine: 20
+        honorBuildingIdSetting: 0
+        buildingsWithUniqueIds: 0
+        moveFeaturePositionTo: 1
+        MeshModifiers: []
+        GoModifiers: []
+        presetFeatureType: 3
+        _maskValue: 0
+        selectedTypes: 
+        spawnPrefabOptions:
+          prefab: {fileID: 2082009218491416162, guid: 3ba809b6fc31b904f88733b9151bdac5,
+            type: 3}
+          scaleDownWithWorld: 0
+        findByType: 0
         categories: -1
         nameString: 
         coordinates:

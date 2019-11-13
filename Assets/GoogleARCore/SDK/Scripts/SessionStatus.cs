@@ -51,23 +51,31 @@ namespace GoogleARCore
         NotTracking = 102,
 
         /// <summary>
-        /// An ARCore session cannot begin tracking because a fatal error was encountered.
+        /// The ARCore session cannot begin tracking because a fatal error was encountered.
         /// </summary>
         FatalError = 200,
 
         /// <summary>
-        /// An ARCore session cannot begin tracking because the ARCore service APK is not available on the device.
+        /// The ARCore session cannot begin tracking because the ARCore service APK is not available
+        /// on the device.
         /// </summary>
         ErrorApkNotAvailable = 201,
 
         /// <summary>
-        /// An ARCore session cannot begin tracking because the Android camera permission is not granted.
+        /// The ARCore session cannot begin tracking because an Android permission is not granted
+        /// (e.g. android.permission.CAMERA).
+        ///
+        /// Use <see cref="AndroidPermissionsManager.IsPermissionGranted"> to check if
+        /// the required Android permission has been granted.
         /// </summary>
         ErrorPermissionNotGranted = 202,
 
         /// <summary>
-        /// An ARCore session cannot begin tracking because the session configuration supplied is not supported or no
-        /// session configuration was supplied.
+        /// The ARCore session cannot begin tracking because the session configuration supplied is
+        /// not supported or no session configuration was supplied.
+        ///
+        /// To recover, fix the configuration and ensure ARCoreSession is not enabled. Once
+        /// SessionStatus is SessionStatus.NotTracking, ARCoreSession can be enabled.
         /// </summary>
         ErrorSessionConfigurationNotSupported = 203,
     }

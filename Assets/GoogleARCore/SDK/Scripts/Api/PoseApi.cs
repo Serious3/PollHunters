@@ -21,15 +21,10 @@
 namespace GoogleARCoreInternal
 {
     using System;
-    using System.Collections.Generic;
-    using System.Diagnostics.CodeAnalysis;
     using System.Runtime.InteropServices;
-    using GoogleARCore;
     using UnityEngine;
 
-    [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented",
-    Justification = "Internal")]
-    public class PoseApi
+    internal class PoseApi
     {
         private NativeSession m_NativeSession;
 
@@ -67,14 +62,15 @@ namespace GoogleARCoreInternal
         private struct ExternApi
         {
             [DllImport(ApiConstants.ARCoreNativeApi)]
-            public static extern void ArPose_create(IntPtr session, ref ApiPoseData rawPose, ref IntPtr poseHandle);
+            public static extern void ArPose_create(
+                IntPtr session, ref ApiPoseData rawPose, ref IntPtr poseHandle);
 
             [DllImport(ApiConstants.ARCoreNativeApi)]
             public static extern void ArPose_destroy(IntPtr poseHandle);
 
             [DllImport(ApiConstants.ARCoreNativeApi)]
-            public static extern void ArPose_getPoseRaw(IntPtr sessionHandle, IntPtr poseHandle,
-                ref ApiPoseData rawPose);
+            public static extern void ArPose_getPoseRaw(
+                IntPtr sessionHandle, IntPtr poseHandle, ref ApiPoseData rawPose);
         }
     }
 }

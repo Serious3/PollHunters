@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "796549363210",
+    "firebase_url": "https://poll-hunters.firebaseio.com",
+    "project_id": "poll-hunters",
+    "storage_bucket": "poll-hunters.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:796549363210:android:f21350c5f5cfac231d11f3",
+        "android_client_info": {
+          "package_name": "dev.kyleg.pollhunters"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "796549363210-pn3ob20k5772fma8moj25kt3ur9dtpn1.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCL-R9fJLhm0sX42huflDyeH8aub673VfU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "796549363210-pn3ob20k5772fma8moj25kt3ur9dtpn1.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -22,14 +22,19 @@ namespace GoogleARCoreInternal
 {
     using System;
     using System.Collections.Generic;
-    using System.Diagnostics.CodeAnalysis;
     using System.Runtime.InteropServices;
     using GoogleARCore;
     using UnityEngine;
 
-    [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented",
-    Justification = "Internal")]
-    public class SessionApi
+#if UNITY_IOS && !UNITY_EDITOR
+    using AndroidImport = GoogleARCoreInternal.DllImportNoop;
+    using IOSImport = System.Runtime.InteropServices.DllImportAttribute;
+#else
+    using AndroidImport = System.Runtime.InteropServices.DllImportAttribute;
+    using IOSImport = GoogleARCoreInternal.DllImportNoop;
+#endif
+
+    internal class SessionApi
     {
         private NativeSession m_NativeSession;
 
@@ -40,65 +45,105 @@ namespace GoogleARCoreInternal
 
         public void ReportEngineType()
         {
-            ExternApi.ArSession_reportEngineType(m_NativeSession.SessionHandle, "Unity",
-                Application.unityVersion);
-        }
-
-        public ApiArStatus CheckSupported(ARCoreSessionConfig config)
-        {
-            IntPtr configHandle;
-            if (config == null)
-            {
-                configHandle = IntPtr.Zero;
-                return ApiArStatus.ErrorUnsupportedConfiguration;
-            }
-            else
-            {
-                configHandle = m_NativeSession.SessionConfigApi.Create();
-                m_NativeSession.SessionConfigApi.UpdateApiConfigWithArCoreSessionConfig(configHandle, config);
-            }
-
-            ApiArStatus ret = ExternApi.ArSession_checkSupported(m_NativeSession.SessionHandle, configHandle);
-            m_NativeSession.SessionConfigApi.Destroy(configHandle);
-            return ret;
+            ExternApi.ArSession_reportEngineType(
+                m_NativeSession.SessionHandle, "Unity", Application.unityVersion);
         }
 
         public bool SetConfiguration(ARCoreSessionConfig sessionConfig)
         {
             IntPtr configHandle = m_NativeSession.SessionConfigApi.Create();
-            m_NativeSession.SessionConfigApi.UpdateApiConfigWithArCoreSessionConfig(configHandle, sessionConfig);
+            m_NativeSession.SessionConfigApi.UpdateApiConfigWithArCoreSessionConfig(
+                configHandle, sessionConfig);
 
-            bool ret = ExternApi.ArSession_configure(m_NativeSession.SessionHandle, configHandle) == 0;
+            bool ret =
+                ExternApi.ArSession_configure(m_NativeSession.SessionHandle, configHandle) == 0;
             m_NativeSession.SessionConfigApi.Destroy(configHandle);
 
             return ret;
         }
 
+        public void GetSupportedCameraConfigurationsWithFilter(
+            ARCoreCameraConfigFilter cameraConfigFilter,
+            IntPtr cameraConfigListHandle, List<IntPtr> supportedCameraConfigHandles,
+            List<CameraConfig> supportedCameraConfigs, DeviceCameraDirection cameraFacingDirection)
+        {
+            IntPtr cameraConfigFilterHandle =
+                m_NativeSession.CameraConfigFilterApi.Create(cameraConfigFilter);
+            ExternApi.ArSession_getSupportedCameraConfigsWithFilter(m_NativeSession.SessionHandle,
+                cameraConfigFilterHandle, cameraConfigListHandle);
+            m_NativeSession.CameraConfigFilterApi.Destroy(cameraConfigFilterHandle);
+
+            supportedCameraConfigHandles.Clear();
+            supportedCameraConfigs.Clear();
+            int listSize = m_NativeSession.CameraConfigListApi.GetSize(cameraConfigListHandle);
+
+            for (int i = 0; i < listSize; i++)
+            {
+                IntPtr cameraConfigHandle = m_NativeSession.CameraConfigApi.Create();
+                m_NativeSession.CameraConfigListApi.GetItemAt(
+                    cameraConfigListHandle, i, cameraConfigHandle);
+
+                // Skip camera config that has a different camera facing direction.
+                DeviceCameraDirection configDirection =
+                    m_NativeSession.CameraConfigApi.GetFacingDirection(cameraConfigHandle)
+                        .ToDeviceCameraDirection();
+                if (configDirection != cameraFacingDirection)
+                {
+                    continue;
+                }
+
+                supportedCameraConfigHandles.Add(cameraConfigHandle);
+                supportedCameraConfigs.Add(_CreateCameraConfig(cameraConfigHandle));
+            }
+        }
+
+        public ApiArStatus SetCameraConfig(IntPtr cameraConfigHandle)
+        {
+            return ExternApi.ArSession_setCameraConfig(
+                m_NativeSession.SessionHandle, cameraConfigHandle);
+        }
+
+        public CameraConfig GetCameraConfig()
+        {
+            IntPtr cameraConfigHandle = m_NativeSession.CameraConfigApi.Create();
+
+            if (InstantPreviewManager.IsProvidingPlatform)
+            {
+                InstantPreviewManager.LogLimitedSupportMessage("access camera config");
+                return new CameraConfig();
+            }
+
+            ExternApi.ArSession_getCameraConfig(m_NativeSession.SessionHandle, cameraConfigHandle);
+            CameraConfig currentCameraConfig = _CreateCameraConfig(cameraConfigHandle);
+            m_NativeSession.CameraConfigApi.Destroy(cameraConfigHandle);
+            return currentCameraConfig;
+        }
+
         public void GetAllTrackables(List<Trackable> trackables)
         {
             IntPtr listHandle = m_NativeSession.TrackableListApi.Create();
-            ExternApi.ArSession_getAllTrackables(m_NativeSession.SessionHandle, ApiTrackableType.BaseTrackable, listHandle);
+            ExternApi.ArSession_getAllTrackables(
+                m_NativeSession.SessionHandle, ApiTrackableType.BaseTrackable, listHandle);
 
             trackables.Clear();
             int count = m_NativeSession.TrackableListApi.GetCount(listHandle);
             for (int i = 0; i < count; i++)
             {
-                IntPtr trackableHandle = m_NativeSession.TrackableListApi.AcquireItem(listHandle, i);
-                trackables.Add(m_NativeSession.TrackableFactory(trackableHandle));
+                IntPtr trackableHandle =
+                    m_NativeSession.TrackableListApi.AcquireItem(listHandle, i);
+
+                Trackable trackable = m_NativeSession.TrackableFactory(trackableHandle);
+                if (trackable != null)
+                {
+                    trackables.Add(trackable);
+                }
+                else
+                {
+                    m_NativeSession.TrackableApi.Release(trackableHandle);
+                }
             }
 
             m_NativeSession.TrackableListApi.Destroy(listHandle);
-        }
-
-        public Anchor CreateAnchor(Pose pose)
-        {
-            IntPtr poseHandle = m_NativeSession.PoseApi.Create(pose);
-            IntPtr anchorHandle = IntPtr.Zero;
-            ExternApi.ArSession_acquireNewAnchor(m_NativeSession.SessionHandle, poseHandle, ref anchorHandle);
-            var anchorResult = Anchor.AnchorFactory(anchorHandle, m_NativeSession);
-            m_NativeSession.PoseApi.Destroy(poseHandle);
-
-            return anchorResult;
         }
 
         public void SetDisplayGeometry(ScreenOrientation orientation, int width, int height)
@@ -125,36 +170,105 @@ namespace GoogleARCoreInternal
                     break;
             }
 
-            ExternApi.ArSession_setDisplayGeometry(m_NativeSession.SessionHandle, androidOrientation, width, height);
+            ExternApi.ArSession_setDisplayGeometry(
+                m_NativeSession.SessionHandle, androidOrientation, width, height);
+        }
+
+        public Anchor CreateAnchor(Pose pose)
+        {
+            IntPtr poseHandle = m_NativeSession.PoseApi.Create(pose);
+            IntPtr anchorHandle = IntPtr.Zero;
+            ExternApi.ArSession_acquireNewAnchor(
+                m_NativeSession.SessionHandle, poseHandle, ref anchorHandle);
+            var anchorResult = Anchor.Factory(m_NativeSession, anchorHandle);
+            m_NativeSession.PoseApi.Destroy(poseHandle);
+            return anchorResult;
+        }
+
+        public ApiArStatus CreateCloudAnchor(
+            IntPtr platformAnchorHandle, out IntPtr cloudAnchorHandle)
+        {
+            cloudAnchorHandle = IntPtr.Zero;
+            var result =
+                ExternApi.ArSession_hostAndAcquireNewCloudAnchor(
+                    m_NativeSession.SessionHandle, platformAnchorHandle, ref cloudAnchorHandle);
+            return result;
+        }
+
+        public ApiArStatus ResolveCloudAnchor(String cloudAnchorId, out IntPtr cloudAnchorHandle)
+        {
+            cloudAnchorHandle = IntPtr.Zero;
+            return ExternApi.ArSession_resolveAndAcquireNewCloudAnchor(
+                m_NativeSession.SessionHandle, cloudAnchorId, ref cloudAnchorHandle);
+        }
+
+        private CameraConfig _CreateCameraConfig(IntPtr cameraConfigHandle)
+        {
+            int imageWidth = 0;
+            int imageHeight = 0;
+            int textureWidth = 0;
+            int textureHeight = 0;
+            int minFps = 0;
+            int maxFps = 0;
+            CameraConfigDepthSensorUsages depthSensorUsage =
+                m_NativeSession.CameraConfigApi.GetDepthSensorUsage(cameraConfigHandle);
+            m_NativeSession.CameraConfigApi.GetImageDimensions(
+                cameraConfigHandle, out imageWidth, out imageHeight);
+            m_NativeSession.CameraConfigApi.GetTextureDimensions(
+                cameraConfigHandle, out textureWidth, out textureHeight);
+            m_NativeSession.CameraConfigApi.GetFpsRange(
+                cameraConfigHandle, out minFps, out maxFps);
+
+            return new CameraConfig(new Vector2(imageWidth, imageHeight),
+                new Vector2(textureWidth, textureHeight), minFps, maxFps, depthSensorUsage);
         }
 
         private struct ExternApi
         {
-            [DllImport(ApiConstants.ARCoreNativeApi)]
-            public static extern void ArSession_destroy(IntPtr sessionHandle);
-
-            [DllImport(ApiConstants.ARCoreNativeApi)]
-            public static extern ApiArStatus ArSession_checkSupported(IntPtr sessionHandle, IntPtr config);
-
-            [DllImport(ApiConstants.ARCoreNativeApi)]
+#pragma warning disable 626
+            [AndroidImport(ApiConstants.ARCoreNativeApi)]
             public static extern int ArSession_configure(IntPtr sessionHandle, IntPtr config);
 
+            [AndroidImport(ApiConstants.ARCoreNativeApi)]
+            public static extern void ArSession_getSupportedCameraConfigsWithFilter(
+                IntPtr sessionHandle, IntPtr cameraConfigFilterHandle,
+                IntPtr cameraConfigListHandle);
+
+            [AndroidImport(ApiConstants.ARCoreNativeApi)]
+            public static extern ApiArStatus ArSession_setCameraConfig(
+                IntPtr sessionHandle, IntPtr cameraConfigHandle);
+
+            [AndroidImport(ApiConstants.ARCoreNativeApi)]
+            public static extern void ArSession_getCameraConfig(
+                IntPtr sessionHandle, IntPtr cameraConfigHandle);
+
+            [AndroidImport(ApiConstants.ARCoreNativeApi)]
+            public static extern void ArSession_getAllTrackables(
+                IntPtr sessionHandle, ApiTrackableType filterType, IntPtr trackableList);
+
+            [AndroidImport(ApiConstants.ARCoreNativeApi)]
+            public static extern void ArSession_setDisplayGeometry(
+                IntPtr sessionHandle, int rotation, int width, int height);
+
+            [AndroidImport(ApiConstants.ARCoreNativeApi)]
+            public static extern int ArSession_acquireNewAnchor(
+                IntPtr sessionHandle, IntPtr poseHandle, ref IntPtr anchorHandle);
+#pragma warning restore 626
             [DllImport(ApiConstants.ARCoreNativeApi)]
-            public static extern void ArSession_setDisplayGeometry(IntPtr sessionHandle, int rotation, int width,
-                int height);
+            public static extern void ArSession_reportEngineType(
+                IntPtr sessionHandle, string engineType, string engineVersion);
 
             [DllImport(ApiConstants.ARCoreNativeApi)]
-            public static extern void ArSession_getAllTrackables(IntPtr sessionHandle, ApiTrackableType filterType,
-                IntPtr trackableList);
+            public static extern ApiArStatus ArSession_hostAndAcquireNewCloudAnchor(
+                IntPtr sessionHandle,
+                IntPtr anchorHandle,
+                ref IntPtr cloudAnchorHandle);
 
             [DllImport(ApiConstants.ARCoreNativeApi)]
-            public static extern void ArSession_reportEngineType(IntPtr sessionHandle,
-                string engineType,
-                string engineVersion);
-
-            [DllImport(ApiConstants.ARCoreNativeApi)]
-            public static extern int ArSession_acquireNewAnchor(IntPtr sessionHandle, IntPtr poseHandle,
-                ref IntPtr anchorHandle);
+            public static extern ApiArStatus ArSession_resolveAndAcquireNewCloudAnchor(
+                IntPtr sessionHandle,
+                String cloudAnchorId,
+                ref IntPtr cloudAnchorHandle);
         }
     }
 }

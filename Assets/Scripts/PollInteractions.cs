@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using Mapbox.Unity.MeshGeneration.Components;
 using UnityEngine;
 
 public class PollInteractions : MonoBehaviour
@@ -19,7 +20,10 @@ public class PollInteractions : MonoBehaviour
         var ray = Camera.main.ScreenPointToRay(Input.mousePosition);
         if(Physics.Raycast(ray, out var hit, 1000, 1 << 9))
         {
-            uiManager.ShowPoll(null);
+            var pollInfo = hit.transform.GetComponentInParent<FeatureBehaviour>();
+            var pollName = (string) pollInfo.VectorEntity.Feature.Properties["Name"];
+            print("Showing " + pollName);
+            uiManager.ShowPoll(pollName);
             //hit.collider.gameObject
         }
     }

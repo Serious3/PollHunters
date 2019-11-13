@@ -4,5 +4,8 @@
 EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
-  m_Scenes: []
+  m_Scenes:
+  - enabled: 1
+    path: Assets/Scenes/POIPlacement.unity
+    guid: bdd63f2573b7fd94d9250510fb47c2cd
   m_configObjects: {}
