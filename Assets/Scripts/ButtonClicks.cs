@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 public class ButtonClicks : MonoBehaviour
 {
     public GameObject MenuIMG;
@@ -42,5 +43,9 @@ public class ButtonClicks : MonoBehaviour
         MenuIMG.SetActive(false);
         SettingsIMG.SetActive(false);
         MenuBTN.SetActive(true);
+    }
+    public void LoginClick()
+    {
+        SceneManager.LoadScene(0);
     }
 }
