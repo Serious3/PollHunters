@@ -4,18 +4,29 @@ using System.Threading.Tasks;
 using Firebase.Auth;
 using Google;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class Auth : Singleton<Auth>
 {
-    private FirebaseUser user;
+    public FirebaseUser user;
     private FirebaseAuth auth;
     
-    private void Start() {
+    private void Awake() {
         auth = Firebase.Auth.FirebaseAuth.DefaultInstance;
         auth.StateChanged += AuthStateChanged;
         AuthStateChanged(this, null);
     }
 
+    private void InitAuth()
+    {
+        if (auth == null)
+        {
+            auth = Firebase.Auth.FirebaseAuth.DefaultInstance;
+            auth.StateChanged += AuthStateChanged;
+            AuthStateChanged(this, null);
+        }
+    }
+    
     private void AuthStateChanged(object sender, System.EventArgs eventArgs) {
         if (auth.CurrentUser == user) return;
         
@@ -26,6 +37,11 @@ public class Auth : Singleton<Auth>
         user = auth.CurrentUser;
         if (signedIn) {
             Debug.Log("Signed in " + user.UserId);
+            Firebase.Auth.UserProfile profile = new Firebase.Auth.UserProfile {
+                DisplayName = "Jane Q. User",
+            };
+            user.UpdateUserProfileAsync(profile).ContinueWith(a => { });
+            SceneManager.LoadScene("POIPlacement");
         }
     }
     
@@ -33,21 +49,20 @@ public class Auth : Singleton<Auth>
     {
 #if UNITY_EDITOR
         var editorSignInCompleted = new TaskCompletionSource<FirebaseUser> ();
-        auth.SignInWithCredentialAsync(EmailAuthProvider.GetCredential("", "")).ContinueWith(authTask => {
+        auth.SignInWithCredentialAsync(EmailAuthProvider.GetCredential("test@example.com", "password")).ContinueWith(authTask => {
             if (authTask.IsCanceled) {
                 editorSignInCompleted.SetCanceled();
             } else if (authTask.IsFaulted) {
                 editorSignInCompleted.SetException(authTask.Exception);
             } else {
-                editorSignInCompleted.SetResult(((Task<FirebaseUser>)authTask).Result);
+                editorSignInCompleted.SetResult(authTask.Result);
             }
         });
-        if (editorSignInCompleted is TaskCompletionSource<FirebaseUser>)
+        if (auth.CurrentUser == null || auth.CurrentUser.Email != "debug code")
         {
             return;
         }
 #endif
-        
         
         GoogleSignIn.Configuration = new GoogleSignInConfiguration {
             RequestIdToken = true,
@@ -63,8 +78,7 @@ public class Auth : Singleton<Auth>
             } else if (task.IsFaulted) {
                 signInCompleted.SetException (task.Exception);
             } else {
-
-                var credential = GoogleAuthProvider.GetCredential (((Task<GoogleSignInUser>)task).Result.IdToken, null);
+                var credential = GoogleAuthProvider.GetCredential (task.Result.IdToken, null);
                 auth.SignInWithCredentialAsync(credential).ContinueWith(authTask => {
                     if (authTask.IsCanceled) {
                         signInCompleted.SetCanceled();

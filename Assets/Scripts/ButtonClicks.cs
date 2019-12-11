@@ -5,47 +5,15 @@ using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 public class ButtonClicks : MonoBehaviour
 {
-    public GameObject MenuIMG;
-    public GameObject SettingsIMG;
-    public GameObject MenuBTN;
-    void Start()
+    private string GUIName;
+    
+    public void SetGUIName(string GUIName)
     {
-        MenuIMG.SetActive(false);
-        SettingsIMG.SetActive(false);
-        MenuBTN.SetActive(true);
+        this.GUIName = GUIName;
     }
-    public void Main_Menu_BTN()
+    
+    public void ShowGUI(bool visible)
     {
-        MenuIMG.SetActive(true);
-        SettingsIMG.SetActive(false);
-        MenuBTN.SetActive(false);
-    }
-    public void quitGame()
-    {
-        MenuIMG.SetActive(false);
-        SettingsIMG.SetActive(false);
-        MenuBTN.SetActive(true);
-        Application.Quit();
-    }
-    public void MenuClose()
-    {
-        MenuIMG.SetActive(false);
-        SettingsIMG.SetActive(false);
-        MenuBTN.SetActive(true);
-    }
-    public void Settings()
-    {
-        SettingsIMG.SetActive(true);
-        MenuIMG.SetActive(true);
-    }
-    public void RTNGame()
-    {
-        MenuIMG.SetActive(false);
-        SettingsIMG.SetActive(false);
-        MenuBTN.SetActive(true);
-    }
-    public void LoginClick()
-    {
-        SceneManager.LoadScene(0);
+        transform.Find(GUIName).gameObject.SetActive(visible);
     }
 }
