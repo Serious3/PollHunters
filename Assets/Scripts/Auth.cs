@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Firebase.Auth;
-using Google;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -38,7 +37,7 @@ public class Auth : Singleton<Auth>
         if (signedIn) {
             Debug.Log("Signed in " + user.UserId);
             Firebase.Auth.UserProfile profile = new Firebase.Auth.UserProfile {
-                DisplayName = "Jane Q. User",
+                DisplayName = "Kyle Gray",
             };
             user.UpdateUserProfileAsync(profile).ContinueWith(a => { });
             SceneManager.LoadScene("POIPlacement");
@@ -47,7 +46,6 @@ public class Auth : Singleton<Auth>
     
     public void SignInWithGoogle()
     {
-#if UNITY_EDITOR
         var editorSignInCompleted = new TaskCompletionSource<FirebaseUser> ();
         auth.SignInWithCredentialAsync(EmailAuthProvider.GetCredential("test@example.com", "password")).ContinueWith(authTask => {
             if (authTask.IsCanceled) {
@@ -62,9 +60,8 @@ public class Auth : Singleton<Auth>
         {
             return;
         }
-#endif
         
-        GoogleSignIn.Configuration = new GoogleSignInConfiguration {
+        /*GoogleSignIn.Configuration = new GoogleSignInConfiguration {
             RequestIdToken = true,
             WebClientId = "796549363210-pn3ob20k5772fma8moj25kt3ur9dtpn1.apps.googleusercontent.com"
         };
@@ -89,6 +86,6 @@ public class Auth : Singleton<Auth>
                     }
                 });
             }
-        });
+        });*/
     }
 }
